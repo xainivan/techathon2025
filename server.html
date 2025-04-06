@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Romjam - Social Media Analysis Tool</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            text-decoration: none;
+            color: white;
+        }
+
+        .menu-icon {
+            cursor: pointer;
+            font-size: 24px;
+            z-index: 200;
+        }
+
+        .nav-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background-color: #34495e;
+            width: 200px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            border-radius: 0 0 4px 4px;
+            display: none;
+            z-index: 100;
+        }
+
+        .nav-menu.active {
+            display: block;
+        }
+
+        .nav-menu ul {
+            list-style: none;
+        }
+
+        .nav-menu ul li a {
+            color: white;
+            text-decoration: none;
+            padding: 15px 20px;
+            display: block;
+            transition: background-color 0.3s;
+        }
+
+        .nav-menu ul li a:hover {
+            background-color: #2c3e50;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin: 30px 0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        select, input, textarea, button {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        select {
+            margin-bottom: 15px;
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+            opacity: 0.7;
+            position: relative;
+        }
+
+        button:disabled:hover {
+            background-color: #95a5a6;
+        }
+
+        button:disabled:hover::after {
+            content: 'Please accept Terms of Service';
+            position: absolute;
+            bottom: 120%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #34495e;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 10;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            display: none;
+        }
+
+        .results h2 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+
+        .hidden-content {
+            display: none;
+        }
+
+        .toggle-button {
+            background-color: #2ecc71;
+            margin-top: 15px;
+            margin-bottom: 25px;
+        }
+
+        .toggle-button:hover {
+            background-color: #27ae60;
+        }
+
+        .result-section {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .result-section:last-child {
+            border-bottom: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        .dropzone {
+            border: 2px dashed #ccc;
+            border-radius: 4px;
+            padding: 20px;
+            text-align: center;
+            background: #f9f9f9;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+
+        .dropzone.dragover {
+            background: #e1e1e1;
+            border-color: #3498db;
+        }
+
+        .checkbox-group {
+            margin: 15px 0;
+        }
+
+        .checkbox-group label {
+            display: inline-block;
+            margin-right: 15px;
+            font-weight: normal;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 5px;
+        }
+
+        .image-preview {
+            max-width: 100%;
+            margin: 15px 0;
+            display: none;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 4px;
+        }
+
+        .delete-button {
+            background-color: #e74c3c;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .delete-button:hover {
+            background-color: #c0392b;
+        }
+        
+.checkbox-apple {
+  position: relative;
+  width: 50px;
+  height: 25px;
+  margin: 20px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.checkbox-apple label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50px;
+  height: 25px;
+  border-radius: 50px;
+  background: linear-gradient(to bottom, #b3b3b3, #e6e6e6);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.checkbox-apple label:after {
+  content: '';
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 23px;
+  height: 23px;
+  border-radius: 50%;
+  background-color: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.checkbox-apple input[type="checkbox"]:checked + label {
+  background: linear-gradient(to bottom, #4cd964, #5de24e);
+}
+
+.checkbox-apple input[type="checkbox"]:checked + label:after {
+  transform: translateX(25px);
+}
+
+.checkbox-apple label:hover {
+  background: linear-gradient(to bottom, #b3b3b3, #e6e6e6);
+}
+
+.checkbox-apple label:hover:after {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.yep {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50px;
+  height: 25px;
+}
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Add these new styles */
+        .tos-container {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            gap: 10px;
+        }
+
+        .tos-text {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .tos-error {
+            color: #e74c3c;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .tos-link {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .tos-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Add these new styles */
+        .checkbox-wrapper {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+            color: #3498db;
+            text-decoration: underline;
+            font-size: 12px;
+        }
+
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: #34495e;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tooltip .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #34495e transparent transparent transparent;
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="#" class="logo">Equilla</a>
+        <div class="menu-icon">☰</div>
+        <nav class="nav-menu">
+            <ul>
+                <li><a href="#">Try</a></li>
+                <li><a href="#">About Us</a></li>
+                <li><a href="#">Our Goal</a></li>
+                <li><a href="#">Contact Us</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h1>Social Media Content Analysis Tool</h1>
+
+        <div class="form-group">
+            <label for="platform">Select social media platform:</label>
+            <select id="platform">
+                <option value="">-- Select platform --</option>
+                <option value="instagram">Instagram</option>
+                <option value="screenshot">Screenshot</option>
+                <option value="other">Other</option>
+            </select>
+        </div>
+
+        <div class="form-group" id="screenshot-upload" style="display: none;">
+            <div class="dropzone" id="drop-area">
+                <p>Drag and drop files here or click to select files</p>
+                <input type="file" id="screenshot" accept="image/*" style="display: none;">
+            </div>
+            <div class="image-preview" id="image-preview">
+                <img id="preview-img">
+            </div>
+            <button id="delete-image" class="delete-button">Delete Image</button>
+        </div>
+
+        <div id="input-container" class="form-group" style="display: none;"></div>
+        <div class="checkbox-group">
+            <label>
+                <input type="checkbox" id="show-analysis"> Analysis
+            </label>
+            <label>
+                <input type="checkbox" id="show-report"> Help to report
+            </label>
+            <div class="checkbox-wrapper">
+                <label>
+                    <input type="checkbox" id="show-comment"> Comment
+                </label>
+                <span class="tooltip">?
+                    <span class="tooltip-text">Comment: Suggests appropriate ways to respond to potentially discriminatory content while maintaining a constructive dialogue.</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- Add the new ToS checkbox -->
+        <div class="tos-container">
+            <div class="checkbox-apple">
+                <input type="checkbox" id="tos-checkbox" class="yep">
+                <label for="tos-checkbox"></label>
+            </div>
+            <span class="tos-text">I accept the <a href="#" class="tos-link">Terms of Service</a> and understand that the content will be analyzed</span>
+        </div>
+        <div class="tos-error" id="tos-error">*You must first accept the ToS</div>
+
+        <div id="error-message" class="error-message">Please enter a valid Instagram link (e.g., https://www.instagram.com/p/XXXX...)</div>
+
+        <button id="submit-button" disabled>Analyze Content</button>
+
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Analyzing content, please wait...</p>
+        </div>
+
+        <div id="results" class="results">
+            <div class="result-section" id="summary-section">
+                <h2>Summary Analysis</h2>
+                <p id="summary">This content appears to contain gender stereotypes and bias. The language and framing reinforces traditional gender roles in a potentially harmful way.</p>
+            </div>
+
+            <div class="result-section" id="detailed-section">
+                <h2>Detailed Analysis</h2>
+                <p id="detailed">The post uses language that reinforces gender stereotypes by suggesting that certain behaviors or characteristics are inherently tied to gender identity. Specifically, the content implies that women should prioritize appearance and nurturing roles while men should focus on career and strength. This type of framing can be harmful as it limits individual expression and reinforces societal expectations based solely on gender. The language used shows a clear pattern of gender-based assumptions and potentially contributes to bias in how we perceive gender roles in society.</p>
+            </div>
+
+            <div class="result-section" id="response-section">
+                <h2>Suggested Response</h2>
+                <p id="response">Thank you for sharing this perspective. I believe it's important to recognize that abilities, interests, and behaviors exist on a spectrum that isn't determined by gender. People of all genders can excel in any field and express themselves in ways that feel authentic to them, rather than conforming to stereotypical expectations.</p>
+            </div>
+
+            <div class="result-section" id="report-section">
+                <h2>Report Text</h2>
+                <p id="report">I am reporting this content because it promotes harmful gender stereotypes that reinforce inequality. The post suggests limiting behaviors and opportunities based on gender identity, which violates platform guidelines on hate speech and discrimination. This type of content contributes to bias and discrimination in society.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const menuIcon = document.querySelector('.menu-icon');
+        const navMenu = document.querySelector('.nav-menu');
+        const platformSelect = document.getElementById('platform');
+        const inputContainer = document.getElementById('input-container');
+        const submitButton = document.getElementById('submit-button');
+        const errorMessage = document.getElementById('error-message');
+        const resultsDiv = document.getElementById('results');
+        const loadingDiv = document.getElementById('loading');
+        const dropArea = document.getElementById('drop-area');
+        const fileInput = document.getElementById('screenshot');
+
+        // Result sections
+        const summarySection = document.getElementById('summary-section');
+        const detailedSection = document.getElementById('detailed-section');
+        const responseSection = document.getElementById('response-section');
+        const reportSection = document.getElementById('report-section');
+
+        // Checkboxes
+        const showAnalysis = document.getElementById('show-analysis');
+        const showComment = document.getElementById('show-comment');
+        const showReport = document.getElementById('show-report');
+
+        // Outputs
+        const summaryOutput = document.getElementById('summary');
+        const detailedOutput = document.getElementById('detailed');
+        const responseOutput = document.getElementById('response');
+        const reportOutput = document.getElementById('report');
+
+        menuIcon.addEventListener('click', function() {
+            navMenu.classList.toggle('active');
+        });
+
+        document.addEventListener('click', function(event) {
+            if (!menuIcon.contains(event.target) && !navMenu.contains(event.target)) {
+                navMenu.classList.remove('active');
+            }
+        });
+
+        // File drag and drop functionality
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight(e) {
+            dropArea.classList.add('dragover');
+        }
+
+        function unhighlight(e) {
+            dropArea.classList.remove('dragover');
+        }
+
+        dropArea.addEventListener('drop', handleDrop, false);
+        dropArea.addEventListener('click', () => fileInput.click());
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        }
+
+        fileInput.addEventListener('change', function() {
+            handleFiles(this.files);
+        });
+
+        function handleFiles(files) {
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const previewImg = document.getElementById('preview-img');
+                        previewImg.src = e.target.result;
+                        document.getElementById('image-preview').style.display = 'block';
+                        document.getElementById('delete-image').style.display = 'block';
+                        dropArea.style.display = 'none';
+                        validateSubmitButton();
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    alert('Please upload an image file');
+                }
+            }
+        }
+
+        document.getElementById('delete-image').addEventListener('click', function() {
+            fileInput.value = '';
+            document.getElementById('image-preview').style.display = 'none';
+            document.getElementById('delete-image').style.display = 'none';
+            dropArea.style.display = 'block';
+            submitButton.disabled = true;
+        });
+
+        platformSelect.addEventListener('change', function() {
+            inputContainer.innerHTML = '';
+            inputContainer.style.display = 'none';
+            submitButton.disabled = true;
+            errorMessage.style.display = 'none';
+            document.getElementById('screenshot-upload').style.display = 'none';
+
+            if (this.value === 'instagram') {
+                inputContainer.innerHTML = `
+                    <label for="content">Instagram post link:</label>
+                    <input type="text" id="content" placeholder="Input the link to the Instagram post">
+                `;
+                inputContainer.style.display = 'block';
+            } else if (this.value === 'screenshot') {
+                document.getElementById('screenshot-upload').style.display = 'block';
+            } else if (this.value === 'other') {
+                inputContainer.innerHTML = `
+                    <label for="content">Post content:</label>
+                    <textarea id="content" placeholder="Paste the text of the post here"></textarea>
+                `;
+                inputContainer.style.display = 'block';
+            }
+
+            const contentInput = document.getElementById('content');
+            if (contentInput) {
+                contentInput.addEventListener('input', validateInput);
+            }
+        });
+
+        function validateInput() {
+            const platform = platformSelect.value;
+            const content = document.getElementById('content').value.trim();
+
+            if (platform === 'instagram') {
+                const isValidInstagramLink = validateInstagramLink(content);
+                errorMessage.style.display = isValidInstagramLink ? 'none' : 'block';
+            }
+            validateSubmitButton();
+        }
+
+        function validateInstagramLink(link) {
+            const regex = /^https?:\/\/(www\.)?instagram\.com\/p\/[\w-]+\/?/;
+            return regex.test(link);
+        }
+
+        const tosCheckbox = document.getElementById('tos-checkbox');
+        const tosError = document.getElementById('tos-error');
+
+        tosCheckbox.addEventListener('change', function() {
+            validateSubmitButton();
+            tosError.style.display = 'none';
+        });
+
+        function validateSubmitButton() {
+            const tosAccepted = tosCheckbox.checked;
+            submitButton.disabled = true; // Start with disabled state
+            
+            if (!tosAccepted) {
+                return; // Exit early if TOS not accepted
+            }
+
+            const platform = platformSelect.value;
+            
+            if (!platform) {
+                return; // Exit if no platform selected
+            }
+            
+            if (platform === 'instagram') {
+                const content = document.getElementById('content')?.value.trim();
+                const isValidInstagramLink = validateInstagramLink(content);
+                submitButton.disabled = !(content && isValidInstagramLink && tosAccepted);
+            } else if (platform === 'screenshot') {
+                const previewImg = document.getElementById('preview-img');
+                submitButton.disabled = !(previewImg.src && tosAccepted);
+            } else if (platform === 'other') {
+                const content = document.getElementById('content')?.value.trim();
+                submitButton.disabled = !(content && tosAccepted);
+            }
+        }
+
+        submitButton.addEventListener('click', async function() {
+            if (!tosCheckbox.checked) {
+                tosError.style.display = 'block';
+                return;
+            }
+            tosError.style.display = 'none';
+
+            const platform = platformSelect.value;
+            const content = document.getElementById('content')?.value.trim();
+
+            resultsDiv.style.display = 'none';
+            loadingDiv.style.display = 'block';
+
+            try {
+                const result = await sendToBackend(platform, content);
+                const analysisData = JSON.parse(result.json);
+
+                summaryOutput.textContent = analysisData.summary;
+                detailedOutput.textContent = analysisData.detailed;
+                responseOutput.textContent = analysisData.response;
+                reportOutput.textContent = analysisData.report;
+
+                loadingDiv.style.display = 'none';
+                resultsDiv.style.display = 'block';
+
+                // Summary section is always visible now
+                summarySection.style.display = 'block';
+                // Show/hide other sections based on checkboxes
+                detailedSection.style.display = showAnalysis.checked ? 'block' : 'none';
+                responseSection.style.display = showComment.checked ? 'block' : 'none';
+                reportSection.style.display = showReport.checked ? 'block' : 'none';
+
+            } catch (error) {
+                console.error('Error analyzing content:', error);
+                loadingDiv.style.display = 'none';
+                alert('An error occurred while analyzing the content. Please try again.');
+            }
+        });
+
+        async function sendToBackend(platform, content) {
+            let requestBody;
+
+            if (platform === 'instagram') {
+                const matches = content.match(/instagram\.com\/p\/([\w-]+)/);
+                const postId = matches ? matches[1] : null;
+
+                if (!postId) {
+                    throw new Error('Invalid Instagram URL');
+                }
+
+                requestBody = {
+                    content_type: 'id',
+                    content: postId
+                };
+            } else if (platform === 'screenshot') {
+                // Get the image from preview
+                const previewImg = document.getElementById('preview-img');
+                if (!previewImg.src) {
+                    throw new Error('No image selected');
+                }
+
+                // Convert base64 URL to pure base64 string by removing data URL prefix
+                const base64String = previewImg.src.split(',')[1];
+                
+                requestBody = {
+                    content_type: 'image',
+                    content: base64String
+                };
+            } else {
+                requestBody = {
+                    content_type: 'text',
+                    content: content
+                };
+            }
+
+            const response = await fetch(`${window.location.origin}/send`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            return await response.json();
+        }
+    </script>
+</body>
+</html>
